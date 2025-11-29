@@ -25,6 +25,22 @@ import { getPathBetweenSrcAndDest } from "@/lib/getPathBetweenSrcAndDest";
 import { getHousesWithinRadius } from "@/lib/getHousesWithinRadius";
 import { getIpLocation } from "@/lib/getIpLocation";
 
+import L from "leaflet"; // Make sure L is imported
+
+// --- 1. IMPORT THE IMAGES DIRECTLY ---
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+// --- 2. FIX LEAFLET'S DEFAULT ICON PATHS ---
+// This deletes the broken internal link and forces it to use the imports above
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
+
 const openStreetMapUrl = import.meta.env.VITE_REACT_APP_OPENSTREET_MAP_URL;
 const attribution = import.meta.env.VITE_REACT_APP_ATTRIBUTION;
 
