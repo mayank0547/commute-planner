@@ -12,47 +12,36 @@ app.use(express.json());
 // ---------------------------------------------------------
 // ROUTE 1: Get User's IP Location (Fixed for Render)
 // ---------------------------------------------------------
+// DEBUG VERSION of the IP Route
 app.get("/api/v1/ipLocation", async (req, res) => {
   try {
-    // 1. Get the real user IP from the headers (Render/Vercel puts it here)
     const xForwardedFor = req.headers['x-forwarded-for'];
-    
-    // If multiple IPs exist, the first one is the real user
     let ip = xForwardedFor ? xForwardedFor.split(',')[0] : req.socket.remoteAddress;
 
-    // 2. Handle Localhost (::1 or 127.0.0.1)
-    // If we send '::1' to the API, it fails. 
-    // Sending an empty string '' tells the API to use the request's public IP.
+    // --- DEBUG LOGS (Check these in Render Dashboard) ---
+    console.log("-----------------------------------------");
+    console.log("1. Raw Headers:", xForwardedFor);
+    console.log("2. Detected IP:", ip);
+    console.log("-----------------------------------------");
+
     if (ip === '::1' || ip === '127.0.0.1') {
         ip = ''; 
     }
 
-    // 3. Call the API
     const response = await axios.get(`http://ip-api.com/json/${ip}`);
-    const data = response.data;
-
-    // Check if API returned a failure (e.g., private IP range)
-    if(data.status === 'fail') {
-        console.warn("IP Lookup Failed:", data.message);
-        // Fallback to a default location (e.g., New Delhi) if detection fails
-        return res.json({
-            latitude: 28.6139, 
-            longitude: 77.2090, 
-            city: "New Delhi", 
-            region: "Delhi", 
-            country: "India"
-        });
-    }
+    
+    // Log what the API returned
+    console.log("3. API Location:", response.data.country); 
 
     res.json({
-      latitude: data.lat,
-      longitude: data.lon,
-      city: data.city,
-      region: data.regionName,
-      country: data.country,
+      latitude: response.data.lat,
+      longitude: response.data.lon,
+      city: response.data.city,
+      region: response.data.regionName,
+      country: response.data.country,
     });
   } catch (error) {
-    console.error("IP Location Error:", error.message);
+    console.error("Error:", error.message);
     res.status(500).json({ error: "Failed to fetch location" });
   }
 });
